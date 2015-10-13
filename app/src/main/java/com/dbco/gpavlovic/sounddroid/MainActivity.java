@@ -1,16 +1,28 @@
 package com.dbco.gpavlovic.sounddroid;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.SoundCloud;
+import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.SoundCloudService;
+import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.Track;
+
+import java.util.List;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
+
 public class MainActivity extends AppCompatActivity
 {
+
+    private static final String TAG = "MAINACTIVITY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -20,17 +32,25 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
+        SoundCloudService soundCloudService = SoundCloud.getServiceInstance();
+
+        Call<List<Track>> getTracksWithQuery = soundCloudService.searchSongs("Back to back");
+        getTracksWithQuery.enqueue(new Callback<List<Track>>()
         {
             @Override
-            public void onClick(View view)
+            public void onResponse(Response<List<Track>> response, Retrofit retrofit)
             {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Log.d(TAG, "First result title: " + response.body().get(0).getTitle());
+            }
+
+            @Override
+            public void onFailure(Throwable t)
+            {
+
             }
         });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
