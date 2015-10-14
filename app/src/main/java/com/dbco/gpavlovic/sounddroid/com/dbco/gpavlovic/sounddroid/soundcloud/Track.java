@@ -10,15 +10,26 @@ public class Track
     private String mTitle;
     @SerializedName("stream_url")
     private String mStreamURL;
+    @SerializedName("artwork_url")
+    private String mArtworkURL;
+
+    public String getmArtworkURL()
+    {
+        return mArtworkURL;
+    }
+
+    public String getAvatarURL()
+    {
+        if (mArtworkURL != null)
+        {
+            return mArtworkURL.replace("large", "tiny");
+        }
+        return null;
+    }
 
     public int getID()
     {
         return mID;
-    }
-
-    public void setID(int mID)
-    {
-        this.mID = mID;
     }
 
     public String getTitle()
@@ -26,19 +37,8 @@ public class Track
         return mTitle;
     }
 
-    public void setTitle(String mTitle)
-    {
-        this.mTitle = mTitle;
-    }
-
     public String getStreamURL()
     {
         return mStreamURL;
     }
-
-    public void setStreamURL(String mStreamURL)
-    {
-        this.mStreamURL = mStreamURL;
-    }
-
 }

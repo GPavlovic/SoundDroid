@@ -1,16 +1,28 @@
 package com.dbco.gpavlovic.sounddroid;
 
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.SoundCloud;
 import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.SoundCloudService;
 import com.dbco.gpavlovic.sounddroid.com.dbco.gpavlovic.sounddroid.soundcloud.Track;
+import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Call;
@@ -23,6 +35,11 @@ public class MainActivity extends AppCompatActivity
 {
 
     private static final String TAG = "MAINACTIVITY";
+    private TracksAdapter mTracksAdapter;
+    private List<Track> mTrackList;
+    private TextView mSelectedTitle;
+    private ImageView mSelectedThumbnail;
+    private MediaPlayer mMediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -32,15 +49,63 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Media player
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener()
+        {
+            @Override
+            public void onPrepared(MediaPlayer mp)
+            {
+                mp.start();
+            }
+        });
+
+        // Player toolbar
+        Toolbar playerToolbar = (Toolbar)findViewById(R.id.player_toolbar);
+        mSelectedTitle = (TextView)findViewById(R.id.selected_title);
+        mSelectedThumbnail = (ImageView)findViewById(R.id.selected_thumbnail);
+
+        // Setup the view
+        RecyclerView songsList = (RecyclerView)findViewById(R.id.songs_list);
+
+        songsList.setLayoutManager(new LinearLayoutManager(this));
+        mTrackList = new ArrayList<Track>();
+        mTracksAdapter = new TracksAdapter(this, mTrackList);
+        mTracksAdapter.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Track selectedTrack = mTrackList.get(position);
+                mSelectedTitle.setText(selectedTrack.getTitle()); // Set title
+                Picasso.with(MainActivity.this).load(selectedTrack.getAvatarURL()).into(mSelectedThumbnail); // Set image
+
+                try
+                {
+                    mMediaPlayer.setDataSource(selectedTrack.getStreamURL() + "?client_id=" + SoundCloudService.CLIENT_ID);
+                    mMediaPlayer.prepareAsync();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+        songsList.setAdapter(mTracksAdapter);
+
+        // Make HTTP request for tracks
         SoundCloudService soundCloudService = SoundCloud.getServiceInstance();
 
-        Call<List<Track>> getTracksWithQuery = soundCloudService.searchSongs("Back to back");
+        Call<List<Track>> getTracksWithQuery = soundCloudService.searchSongs("Hotline bling");
         getTracksWithQuery.enqueue(new Callback<List<Track>>()
         {
             @Override
             public void onResponse(Response<List<Track>> response, Retrofit retrofit)
             {
-                Log.d(TAG, "First result title: " + response.body().get(0).getTitle());
+                mTrackList.clear();
+                mTrackList.addAll(response.body());
+                mTracksAdapter.notifyDataSetChanged();
             }
 
             @Override
