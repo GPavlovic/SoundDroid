@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity
     private TextView mSelectedTitle;
     private ImageView mSelectedThumbnail;
     private MediaPlayer mMediaPlayer;
+    private ImageView mPlayPauseToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -57,17 +58,27 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onPrepared(MediaPlayer mp)
             {
-                mp.start();
+                togglePlayerState();
             }
         });
 
         // Player toolbar
-        Toolbar playerToolbar = (Toolbar)findViewById(R.id.player_toolbar);
-        mSelectedTitle = (TextView)findViewById(R.id.selected_title);
-        mSelectedThumbnail = (ImageView)findViewById(R.id.selected_thumbnail);
+        Toolbar playerToolbar = (Toolbar) findViewById(R.id.player_toolbar);
+        mSelectedTitle = (TextView) findViewById(R.id.selected_title);
+        mSelectedThumbnail = (ImageView) findViewById(R.id.selected_thumbnail);
+
+        mPlayPauseToggle = (ImageView) findViewById(R.id.player_play_pause);
+        mPlayPauseToggle.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                togglePlayerState();
+            }
+        });
 
         // Setup the view
-        RecyclerView songsList = (RecyclerView)findViewById(R.id.songs_list);
+        RecyclerView songsList = (RecyclerView) findViewById(R.id.songs_list);
 
         songsList.setLayoutManager(new LinearLayoutManager(this));
         mTrackList = new ArrayList<Track>();
@@ -114,6 +125,20 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+    }
+
+    private void togglePlayerState()
+    {
+        if (mMediaPlayer.isPlaying())
+        {
+            mMediaPlayer.pause();
+            mPlayPauseToggle.setImageResource(R.drawable.ic_play);
+        }
+        else
+        {
+            mMediaPlayer.start();
+            mPlayPauseToggle.setImageResource(R.drawable.ic_pause);
+        }
     }
 
 
