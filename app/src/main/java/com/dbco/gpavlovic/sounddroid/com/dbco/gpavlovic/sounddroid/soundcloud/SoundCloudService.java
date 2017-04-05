@@ -8,7 +8,7 @@ import retrofit.http.Query;
 
 public interface SoundCloudService
 {
-    static final String CLIENT_ID = "API_KEY";
+    static final String CLIENT_ID = "CLIENT_ID";
 
     @GET("/tracks?client_id=" + CLIENT_ID)
     Call<List<Track>> searchSongs(@Query("q") String query);
